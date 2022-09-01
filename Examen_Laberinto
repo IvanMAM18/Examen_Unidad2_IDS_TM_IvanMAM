@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas</title>
+    <style type="text/css">
+        canvas{
+            background-color: rgb(138,138,209); 
+            border-color: rgb(1, 1, 12);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="900" height="800">
+        Hola en navegador
+    <canvas>
+</body>
+</html>
+<script type="text/javascript">
+    var canvas = null;
+    var contexto = null;
+    var figura = 'arc';
+    var playerUno = null;
+    var direccion="nada";
+    var speed=2;
+    var pause=false;
+    const pared =[];
+    const coordenadaX=[];
+    const coordenadaY=[];
+    var contadorBombas=0;
+    var pose = new Image();
+    var correr = new Image();
+    var cerrarOjos = new Image();
+    var cancion = new Audio();
+    var ganaste = new Audio();
+    var contadorTiempo = 0;
+    var alturaX=40;
+    var alturaY=390;
+
+    window.setInterval(function(){
+        contadorTiempo++;
+    },1000);
+       //movimientos de teclado
+       document.addEventListener('keydown',function(e){
+           if(e.keyCode == 87 || e.keyCode ==38){
+            direccion="up";
+        }
+        if(e.keyCode == 83 || e.keyCode ==40){
+           direccion="down";
+        }
+        if(e.keyCode == 65 || e.keyCode ==37){
+           direccion="left";
+        }
+        if(e.keyCode == 68 || e.keyCode ==39){
+           direccion="right";
+        }
+        if(e.keyCode == 32){
+           pause =(pause)?false:true;
+        }
+        //console.log(direccion);
+
+    })
+
+    function run(){
+        canvas = document.getElementById('myCanvas');
+        contexto = canvas.getContext('2d');
+        playerUno = new Cuadro(alturaX,alturaY,82,90,"red");
+
+        //Cuadros centrales
+        pared.push (new Cuadro(140,30,50,550,"gray"));
+        pared.push (new Cuadro(290,230,50,550,"gray"));
+        pared.push (new Cuadro(470,170,50,200,"gray"));
+        pared.push (new Cuadro(560,180,200,50,"gray"));
+        pared.push (new Cuadro(470,480,50,320,"gray"));
+        pared.push (new Cuadro(670,440,50,300,"gray"));
+        pared.push (new Cuadro(898,50,50,50,"gray"));
+        //Marco de salida
+        pared.push (new Cuadro(1,1,900,25,"gray"));
+        pared.push (new Cuadro(1,26,25,746,"gray"));
+        pared.push (new Cuadro(1,773,900,25,"gray"));
+        pared.push (new Cuadro(873,140,25,630,"gray"));
+
+        pose.src ='pose.png';
+        correr.src='caminar_derecha.png';
+        cerrarOjos.src='poseOjosCerrados.png';
+        cancion.src='cancion.mp3';
+        ganaste.src="ganar.mp3";
+        paint();
+    }
+    
+    function paint(){
+        window.requestAnimationFrame(paint);
+        contexto.fillStyle = "rgb(0,0,128,0.5)";
+        contexto.fillRect(0,0,900,800);
+        
+        //Cubos centrales
+        pared[0].paint(contexto);
+        pared[1].paint(contexto);
+        pared[2].paint(contexto);
+        pared[3].paint(contexto);
+        pared[4].paint(contexto);
+        pared[5].paint(contexto);
+        pared[6].paint(contexto);
+
+        //Barreras
+        pared[7].paint(contexto);
+        pared[8].paint(contexto);
+        pared[9].paint(contexto);
+        pared[10].paint(contexto);
+
+        //Contador
+        contexto.fillStyle="white";
+        contexto.font = "20px Arial";
+        if(contadorTiempo>9){
+            contexto.fillText("Tiempo: 00: "+contadorTiempo, 20,20);
+        }else{
+            contexto.fillText("Tiempo: 00:0"+contadorTiempo, 20,20);
+        }
+            
+            if(contadorTiempo==40){
+                contadorTiempo=0;
+            }
+            if(pause){
+                contexto.fillStyle="rgb(0,0,0,0.5)";
+                contexto.fillRect(0,0,900,800);
+
+                contexto.fillStyle="white";
+                contexto.fillText('P A U S E',400,300);
+            }
+            else{
+                cancion.play();
+                movimiento();
+                update();
+            }
+            
+            
+        }
+    function movimiento(){
+       if(direccion=="up" || direccion=="down" || direccion=="left"  || direccion=="right"){      
+           contexto.drawImage(correr,playerUno.x,playerUno.y);
+        }else if(contadorTiempo==5 || contadorTiempo==10 || contadorTiempo==20 || contadorTiempo==30){
+            contexto.drawImage(cerrarOjos,playerUno.x,playerUno.y);
+            }else{
+                contexto.drawImage(pose,playerUno.x,playerUno.y);
+
+            }        
+    } 
+    function update(){
+
+        if(direccion=="up"){
+            playerUno.y-=speed;
+            if(playerUno.y<0){
+                playerUno.y=800;
+            }
+        }
+        if(direccion=="down"){
+           playerUno.y+=speed;
+           if(playerUno.y>900){
+                playerUno.y=0;
+            }
+        }
+        if(direccion=="left"){
+           playerUno.x-=speed;
+           if(playerUno.x<0){
+                playerUno.x=900;
+            }
+        }
+        if(direccion=="right"){
+           playerUno.x+=speed;
+           if(playerUno.x>900){
+               playerUno.x=0;
+            }
+        }
+
+        if(contadorTiempo==40){
+            contexto.fillStyle="rgb(0,0,0,0.5)";
+                contexto.fillRect(0,0,900,800);
+
+                contexto.fillStyle="white";
+                contexto.fillText('PERDISTE',370,300);
+                cancion.pause();
+        }
+
+        for(var i=0; i<pared.length; i++){
+            if(playerUno.se_tocan(pared[i])){
+                if(direccion=="up"){
+                    playerUno.y+=speed;
+                }
+                if(direccion=="down"){
+                    playerUno.y-=speed;
+                }
+                if(direccion=="left"){
+                    playerUno.x+=speed;
+                }
+                if(direccion=="right"){
+                    playerUno.x-=speed;
+                }
+    
+            }else if(playerUno.se_tocan(pared[6])){
+                ganaste.play();
+                contexto.fillStyle="rgb(0,0,0,0.5)";
+                contexto.fillRect(0,0,900,800);
+
+                contexto.fillStyle="white";
+                contexto.fillText('GANASTE-REINICIAR',370,300);
+                cancion.pause();
+                if(contadorTiempo<=30){
+                    contadorTiempo=35;
+                }
+                if(contadorTiempo==40){
+                    playerUno.x=40;
+                    playerUno.y=390;
+                    contadorTiempo=0;
+                }
+
+            }        
+        }
+
+        
+    }
+    
+    function Cuadro(x,y,w,h,c){
+        this.x=x;
+        this.y=y;
+        this.w = w;
+        this.h=h;
+        this.c=c;
+
+        this.se_tocan = function (target) { 
+
+            if(this.x < target.x + target.w &&
+
+            this.x + this.w > target.x && 
+
+            this.y < target.y + target.h && 
+
+            this.y + this.h > target.y)
+
+            {
+
+            return true;	 
+
+            }  
+        };
+
+        this.paint = function(contexto){
+            contexto.fillStyle = this.c;
+            contexto.fillRect(this.x,this.y,this.w,this.h);
+            contexto.strokeRect(this.x,this.y,this.w,this.h);
+        }
+    }
+
+    
+    window.requestAnimationFrame = (function () {
+        return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        function (callback) {
+            window.setTimeout(callback, 17);
+        };
+    }());
+
+    window.addEventListener('load',run,false);
+    
+    function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+</script>
